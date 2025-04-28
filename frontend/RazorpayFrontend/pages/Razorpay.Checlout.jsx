@@ -1,24 +1,22 @@
-import axios from "axios";
+import {
+  createOrder,
+  handlePaymentVerify,
+} from "../services/razorpay.Services.js";
 
-const RazorPayCheckOut = () => {
+const RazorPayCheckOutV2 = () => {
   const handlePayment = async () => {
-    console.log("Inside Hanfle Payment");
+    console.log("Inside Handle Payment");
     try {
-      const response = await axios.post(
-        "http://localhost:5800/api/payment/order",
-        {
-          amount: 5000,
-        }
-      );
-      console.log(response);
-      handlePaymentVerify(response.data);
+      const response = await createOrder(300);
+      verifyPayment(response.data);
     } catch (err) {
-      console.log(err);
+      console.log("error in creating order", err);
     }
   };
 
-  const handlePaymentVerify = async (data) => {
+  const verifyPayment = async (data) => {
     console.log("id", data.data.id);
+
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: data.data.amount,
@@ -29,14 +27,8 @@ const RazorPayCheckOut = () => {
       handler: async (response) => {
         console.log("response", response);
         try {
-          const res = await axios.post(
-            "http://localhost:5800/api/payment/verify",
-            {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            }
-          );
+          const res = handlePaymentVerify(response);
+
           console.log("Res", res);
           if (res.message) {
             toast.success(verifyData.message);
@@ -49,6 +41,7 @@ const RazorPayCheckOut = () => {
         color: "#5f63b8",
       },
     };
+
     const rzp1 = new window.Razorpay(options);
     rzp1.open();
   };
@@ -60,4 +53,4 @@ const RazorPayCheckOut = () => {
   );
 };
 
-export default RazorPayCheckOut;
+export default RazorPayCheckOutV2;

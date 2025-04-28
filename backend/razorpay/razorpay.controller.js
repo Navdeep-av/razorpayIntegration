@@ -1,18 +1,15 @@
-import express from "express";
 import "dotenv/config";
 import RazorPay from "razorpay";
 import crypto from "crypto";
-import { error } from "console";
-import { paymentSchemaModell } from "../databse/db.Module.js";
 
-const router = express.Router();
+import { paymentSchemaModell } from "../databse/razorpay.Db.Module.js";
 
 const razorpayInstance = new RazorPay({
   key_id: process.env.RazorPAY_KeyID,
   key_secret: process.env.RazorPAY_SecretID,
 });
 
-router.post("/order", (req, res) => {
+const createOrder = async (req, res) => {
   console.log("Inside");
 
   const { amount } = req.body;
@@ -36,9 +33,9 @@ router.post("/order", (req, res) => {
   } catch (err) {
     console.log(err);
   }
-});
+};
 
-router.post("/verify", async (req, res) => {
+const signatureVarify = async (req, res) => {
   console.log("Verify", req.body);
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
     req.body;
@@ -72,11 +69,6 @@ router.post("/verify", async (req, res) => {
   } catch (err) {
     res.status(500).json("Internal Server Error");
   }
-});
+};
 
-router.get("/get-payment", (req, res) => {
-  console.log("Inside Payemt");
-  res.json("Payment Details");
-});
-
-export default router;
+export { createOrder, signatureVarify };
