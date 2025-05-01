@@ -13,9 +13,17 @@ const paymentSchema = new Schema({
     type: String,
     required: true,
   },
-  date: {
+  status: {
+    type: String,
+    default: "paid",
+  },
+  cancellationReason: {
+    type: String,
+    default: "",
+  },
+  createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now(),
   },
 });
 

@@ -16,3 +16,10 @@ export const handlePaymentVerify = async (response) => {
 
   return res;
 };
+
+export const handleCancelOrder = async (paymentID) => {
+  const res = await axios.post(
+    `http://localhost:5800/api/payment/cancel-order/${paymentID}`
+  );
+  return res;
+};
