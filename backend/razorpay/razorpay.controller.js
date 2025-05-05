@@ -3,7 +3,6 @@ import RazorPay from "razorpay";
 import crypto from "crypto";
 
 import { paymentSchemaModell } from "../databse/razorpay.Db.Module.js";
-import { kMaxLength } from "buffer";
 
 const razorpayInstance = new RazorPay({
   key_id: process.env.RazorPAY_KeyID,
@@ -62,14 +61,15 @@ const signatureVarify = async (req, res) => {
     const isAuthentic = expectedSign === razorpay_signature;
     console.log("IsAuth", isAuthentic);
     if (isAuthentic) {
-      const payment = new paymentSchemaModell({
+      const savePaymentInfo = new paymentSchemaModell({
         razorpay_order_id,
         razorpay_payment_id,
         razorpay_signature,
       });
-      await payment.save();
+      await savePaymentInfo.save();
       res.status(200).json({
         message: "Payment Success",
+        data: savePaymentInfo,
       });
     } else {
       res.status(404).json({ message: "Unauthorized User" });
@@ -87,8 +87,8 @@ const cancelOrder = async (req, res) => {
     razorpay_payment_id: paymentId,
   });
   const timeDiff = (Date.now() - findOrder.createdAt) / 1000;
-
-  if (timeDiff < 60) {
+  console.log("Time", timeDiff);
+  if (timeDiff > 60) {
     return res.status(400).json({ message: "Cannot cancel after 1 minute" });
   } else {
     await paymentSchemaModell.updateOne(
@@ -106,4 +106,99 @@ const cancelOrder = async (req, res) => {
   }
 };
 
-export { createOrder, signatureVarify, cancelOrder };
+// const cancelOrderByPhone = async (req, res) => {
+//   const { userId, paymentId } = req.params;
+//   console.log(userId, paymentId);
+
+//   const findOrder = await paymentSchemaModell.findOne({
+//     razorpay_payment_id: paymentId,
+//     _id: userId,
+//   });
+
+//   if (findOrder.status === "paid") {
+//     await paymentSchemaModell.updateOne(
+//       { razorpay_payment_id: paymentId },
+//       {
+//         $set: {
+//           status: "Order Canceled",
+//           cancellationReason: "Cancel by User via Phone Call",
+//         },
+//       }
+//     );
+//     const refund = await razorpayInstance.payments.refund(paymentId);
+//     console.log("refund", refund);
+//     res.json({ message: "Refund Initiated", refund });
+//   } else {
+//     res.json({ message: "Refund Already Initiated" });
+//   }
+//   console.log("FindOrder", findOrder);
+// };
+
+const cancelOrderByPhoneV2 = async (req, res) => {
+  const { userId, paymentId } = req.params;
+  console.log(userId, paymentId);
+
+  const findOrder = await paymentSchemaModell.findOne({
+    razorpay_payment_id: paymentId,
+    _id: userId,
+  });
+
+  if (findOrder.status === "paid") {
+    if (findOrder.OrderStatus === "Not-Accepted") {
+      await paymentSchemaModell.updateOne(
+        { razorpay_payment_id: paymentId },
+        {
+          $set: {
+            status: "Order Canceled",
+            cancellationReason: "Cancel by User via Phone Call",
+          },
+        }
+      );
+      const refund = await razorpayInstance.payments.refund(paymentId);
+      console.log("refund", refund);
+      res.json({ message: "Refund Initiated", refund });
+    } else if (findOrder.OrderStatus === "Accepted") {
+      console.log("Inside Accepted");
+      res.json({
+        message: "Can not intiate Refund As Order is being in-Process",
+      });
+    }
+  } else {
+    res.json({ message: "Refund Already Initiated" });
+  }
+  console.log("FindOrder", findOrder);
+};
+
+// Update Order Status from Backend
+const updateOrderStatus = async (req, res) => {
+  console.log("inside Statys");
+  const { paymentId } = req.body;
+
+  console.log("PaymentID", paymentId);
+
+  const findOrder = await paymentSchemaModell.findOne({
+    razorpay_payment_id: paymentId,
+  });
+
+  if (findOrder.OrderStatus === "Not-Accepted" && findOrder.status === "paid") {
+    await paymentSchemaModell.updateOne(
+      { razorpay_payment_id: paymentId },
+      {
+        $set: {
+          OrderStatus: "Accepted",
+        },
+      }
+    );
+    res.json("Order Being Started/Processing");
+  } else {
+    res.json("Can not update the Order Status for Some reason");
+  }
+};
+
+export {
+  createOrder,
+  signatureVarify,
+  cancelOrder,
+  updateOrderStatus,
+  cancelOrderByPhoneV2,
+};

@@ -2,6 +2,7 @@ import { CountdownCircleTimer } from "react-countdown-circle-timer";
 import {
   createOrder,
   handleCancelOrder,
+  handleCancelOrderByPhone,
   handlePaymentVerify,
 } from "../services/razorpay.Services.js";
 import { useState } from "react";
@@ -9,13 +10,15 @@ import { ToastContainer, toast } from "react-toastify";
 
 const RazorPayCheckOutV2 = () => {
   const [paymentID, setPaymentID] = useState("");
-
   const [isPlaying, setIsPlaying] = useState(false);
+  const [userID, setUserID] = useState("");
+  const [showPhoneCancelButton, setshowPhoneCancelButton] = useState();
 
   const handlePayment = async () => {
     console.log("Inside Handle Payment");
     try {
       const response = await createOrder(30000);
+
       verifyPayment(response.data);
     } catch (err) {
       console.log("error in creating order", err);
@@ -39,6 +42,7 @@ const RazorPayCheckOutV2 = () => {
           const res = await handlePaymentVerify(response);
 
           console.log("Res", res);
+          setUserID(res.data.data._id);
           if (res.status === 200) {
             setIsPlaying(!isPlaying);
           }
@@ -64,23 +68,36 @@ const RazorPayCheckOutV2 = () => {
     try {
       const res = await handleCancelOrder(paymentID);
       console.log("ResForRefund", res);
-      toast("Refund Intiate");
+      toast("Refund Intiated");
     } catch (err) {
       console.log("Error", err);
     }
   };
 
+  const cancelOrderByPhone = async () => {
+    try {
+      const res = await handleCancelOrderByPhone(userID, paymentID);
+      console.log("ResForRefund", res);
+      toast("Refund Intiate");
+      setshowPhoneCancelButton(!showPhoneCancelButton);
+      console.log(res);
+    } catch (err) {
+      console.log("Error", err);
+    }
+  };
+  console.log("Userid", userID);
   return (
     <div>
       <button onClick={handlePayment}>Pay Now</button>
       {isPlaying && (
         <CountdownCircleTimer
           isPlaying={isPlaying}
-          duration={60}
+          duration={10}
           colors={["#004777", "#F7B801", "#A30000", "#A30000"]}
           colorsTime={[7, 5, 2, 0]}
           onComplete={() => {
             setIsPlaying(!isPlaying);
+            setshowPhoneCancelButton(!showPhoneCancelButton);
             // repeat animation in 1.5 seconds
           }}
         >
@@ -90,6 +107,9 @@ const RazorPayCheckOutV2 = () => {
 
       {isPlaying && <button onClick={cancelOrder}>Cancel Order</button>}
       <ToastContainer />
+      {showPhoneCancelButton && (
+        <button onClick={cancelOrderByPhone}>Cancel Order By Phone</button>
+      )}
     </div>
   );
 };

@@ -23,3 +23,10 @@ export const handleCancelOrder = async (paymentID) => {
   );
   return res;
 };
+
+export const handleCancelOrderByPhone = async (userID, paymentID) => {
+  const res = await axios.post(
+    `http://localhost:5800/api/payment/cancel-order/${userID}/${paymentID}`
+  );
+  return res;
+};
