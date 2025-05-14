@@ -1,0 +1,5 @@
+1) Cron Jobs
+2) How Payment Gateways handles Refund Process
+3) If Razorpay refunded then in 5-7 days then beign Database updated?
+4) How user is tracking this?
+5) Tracking order - from Gmail

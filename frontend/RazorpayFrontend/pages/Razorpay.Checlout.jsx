@@ -20,6 +20,7 @@ const RazorPayCheckOutV2 = () => {
       const response = await createOrder(30000);
 
       verifyPayment(response.data);
+      console.log("Creating Order", response.data);
     } catch (err) {
       console.log("error in creating order", err);
     }
@@ -68,7 +69,7 @@ const RazorPayCheckOutV2 = () => {
     try {
       const res = await handleCancelOrder(paymentID);
       console.log("ResForRefund", res);
-      toast("Refund Intiated");
+      toast(res.data.message);
     } catch (err) {
       console.log("Error", err);
     }
@@ -78,9 +79,10 @@ const RazorPayCheckOutV2 = () => {
     try {
       const res = await handleCancelOrderByPhone(userID, paymentID);
       console.log("ResForRefund", res);
-      toast("Refund Intiate");
+      // toast("Refund Intiate");
+      toast(res.data.message);
+      console.log("ResAfterButtonClick", res);
       setshowPhoneCancelButton(!showPhoneCancelButton);
-      console.log(res);
     } catch (err) {
       console.log("Error", err);
     }

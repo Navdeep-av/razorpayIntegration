@@ -1,5 +1,5 @@
 import express from "express";
-import razorPayRouter from "./razorpay/razorpay.routes.js";
+import razorPayRouter from "./src/api/routes/payments/razorpay/razorpay.routes.js";
 import cors from "cors";
 import "dotenv/config";
 import { connectDB } from "./databse/razorpay.db.js";
