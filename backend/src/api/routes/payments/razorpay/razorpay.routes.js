@@ -3,6 +3,7 @@ import {
   cancelOrder,
   cancelOrderByPhoneV2,
   createOrder,
+  fetchOrderStatus,
   signatureVarify,
   updateOrderStatus,
 } from "../../../../services/payments/razorpay/razorpay.service.js";
@@ -18,5 +19,7 @@ router.post("/cancel-order/:paymentId", cancelOrder);
 router.post("/cancel-order/:userId/:paymentId", cancelOrderByPhoneV2);
 
 router.post("/update-order-status/", updateOrderStatus);
+
+router.get("/order-status/:orderId", fetchOrderStatus);
 
 export default router;

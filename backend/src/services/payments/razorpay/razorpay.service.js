@@ -74,7 +74,13 @@ const signatureVarify = async (req, res) => {
       sendEmail({
         to: "ndeepgupta@gmail.com",
         subject: `New Order Placed ${razorpay_order_id} OAuth`,
-        text: `Order has been successfully Placed, Order ID - ${razorpay_order_id}, Payment ID -  - ${razorpay_payment_id}`,
+
+        html: `
+          <p>Order has been successfully Placed</p>
+          <p>Order ID -  ${razorpay_order_id} </p>
+          <p>Payment ID -  ${razorpay_payment_id} </p>
+          <p>Order Status <a href="http://localhost:5173/order-status/${razorpay_order_id}">Click Here</a></p>
+        `,
         from: process.env.USEREMAIL,
       });
 
@@ -199,10 +205,22 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const fetchOrderStatus = async (req, res) => {
+  console.log("Inside this ");
+  const { orderId } = req.params;
+  console.log("Order ID", orderId);
+  const findOrder = await paymentSchemaModell.findOne({
+    razorpay_order_id: orderId,
+  });
+  console.log("FindOrder", findOrder);
+  res.json({ message: findOrder.OrderStatus });
+};
+
 export {
   createOrder,
   signatureVarify,
   cancelOrder,
   updateOrderStatus,
   cancelOrderByPhoneV2,
+  fetchOrderStatus,
 };

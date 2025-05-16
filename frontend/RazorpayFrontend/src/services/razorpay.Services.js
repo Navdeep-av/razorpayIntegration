@@ -30,3 +30,10 @@ export const handleCancelOrderByPhone = async (userID, paymentID) => {
   );
   return res;
 };
+
+export const fetchOrderStatus = async (orderId) => {
+  const res = await axios.get(
+    `http://localhost:5800/api/payment/order-status/${orderId}`
+  );
+  return res;
+};
